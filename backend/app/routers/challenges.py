@@ -389,3 +389,179 @@ def delete_media(
         message="Media deleted successfully",
         success=True
     )
+
+
+@router.post(
+    "/{challenge_id}/analyze",
+    summary="Analyze challenge with AI",
+    description="Run AI analysis pipeline for a challenge. Requires GOVERNMENT_OFFICER or PLATFORM_ADMIN role."
+)
+def analyze_challenge(
+    challenge_id: UUID,
+    current_user: User = Depends(require_admin_or_government),
+    db: Session = Depends(get_db)
+):
+    """
+    Run AI analysis pipeline for a challenge.
+    
+    **Requirements:**
+    - Must be GOVERNMENT_OFFICER or PLATFORM_ADMIN
+    
+    **Pipeline:**
+    1. Load challenge
+    2. AI analysis (domain, severity, urgency, skills)
+    3. Calculate priority score
+    4. Generate embedding
+    5. Search for semantic duplicates
+    6. Store results
+    7. Update challenge status to PENDING_REVIEW
+    
+    **Returns:**
+    - Complete analysis results
+    - Priority score and level
+    - Duplicate candidates with similarity scores
+    
+    **Note:**
+    - AI recommendations require human review
+    - Duplicates are marked as PENDING_REVIEW
+    - Original challenge is never automatically rejected
+    """
+    from app.services.ai import ChallengeAIService
+    
+    try:
+        ai_service = ChallengeAIService(db)
+        result = ai_service.analyze(challenge_id, current_user.id)
+        return result
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"AI analysis failed: {str(e)}"
+        )
+
+
+@router.get(
+    "/{challenge_id}/ai-analysis",
+    summary="Get AI analysis results",
+    description="Get AI analysis results for a challenge. Requires GOVERNMENT_OFFICER or PLATFORM_ADMIN role."
+)
+def get_ai_analysis(
+    challenge_id: UUID,
+    current_user: User = Depends(require_admin_or_government),
+    db: Session = Depends(get_db)
+):
+    """
+    Get AI analysis results for a challenge.
+    
+    **Requirements:**
+    - Must be GOVERNMENT_OFFICER or PLATFORM_ADMIN
+    
+    **Returns:**
+    - AI analysis summary
+    - Classification and domain
+    - Severity and urgency scores
+    - Extracted skills
+    - Solution recommendations
+    - Confidence scores
+    
+    **Note:**
+    - Returns 404 if analysis has not been run yet
+    """
+    from app.models.challenge import ChallengeAIAnalysis
+    
+    service = ChallengeService(db)
+    challenge = service.get_challenge(challenge_id)
+    
+    if not challenge.ai_analysis:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="AI analysis not found for this challenge"
+        )
+    
+    analysis = challenge.ai_analysis
+    
+    return {
+        "challenge_id": str(challenge.id),
+        "challenge_code": challenge.challenge_code,
+        "model_name": analysis.model_name,
+        "model_version": analysis.model_version,
+        "summary": analysis.summary,
+        "primary_domain": analysis.primary_domain,
+        "severity_score": analysis.severity_score,
+        "urgency_score": analysis.urgency_score,
+        "affected_population_estimate": analysis.affected_population_estimate,
+        "extracted_skills": analysis.extracted_skills,
+        "recommended_solution_types": analysis.recommended_solution_types,
+        "confidence_score": analysis.confidence_score,
+        "analyzed_at": analysis.created_at
+    }
+
+
+@router.get(
+    "/{challenge_id}/duplicates",
+    summary="Get duplicate candidates",
+    description="Get potential duplicate challenges. Requires GOVERNMENT_OFFICER or PLATFORM_ADMIN role."
+)
+def get_duplicate_candidates(
+    challenge_id: UUID,
+    current_user: User = Depends(require_admin_or_government),
+    db: Session = Depends(get_db)
+):
+    """
+    Get duplicate candidates for a challenge.
+    
+    **Requirements:**
+    - Must be GOVERNMENT_OFFICER or PLATFORM_ADMIN
+    
+    **Returns:**
+    - List of similar challenges
+    - Similarity scores (0.0 - 1.0)
+    - Status of each duplicate link
+    
+    **Similarity Levels:**
+    - >= 0.90: HIGH_CONFIDENCE
+    - 0.80-0.89: POSSIBLE
+    - < 0.80: not shown
+    
+    **Note:**
+    - All duplicates initially marked PENDING_REVIEW
+    - Government officer must confirm or dismiss
+    """
+    from app.models.challenge import ChallengeDuplicate, Challenge
+    
+    service = ChallengeService(db)
+    challenge = service.get_challenge(challenge_id)
+    
+    duplicates = db.query(ChallengeDuplicate).filter(
+        ChallengeDuplicate.challenge_id == challenge_id
+    ).all()
+    
+    results = []
+    for dup in duplicates:
+        similar_challenge = db.query(Challenge).filter(
+            Challenge.id == dup.similar_challenge_id
+        ).first()
+        
+        if similar_challenge:
+            results.append({
+                "duplicate_id": str(dup.id),
+                "challenge_id": str(similar_challenge.id),
+                "challenge_code": similar_challenge.challenge_code,
+                "title": similar_challenge.title,
+                "status": similar_challenge.status.value,
+                "similarity_score": dup.similarity_score,
+                "duplicate_status": dup.status.value,
+                "reviewed_by": str(dup.reviewed_by) if dup.reviewed_by else None,
+                "created_at": dup.created_at
+            })
+    
+    return {
+        "challenge_id": str(challenge_id),
+        "challenge_code": challenge.challenge_code,
+        "duplicates": results,
+        "total": len(results)
+    }
