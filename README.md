@@ -91,12 +91,15 @@ graph TD
 - **Responsive Design** - Mobile-first approach
 
 ### Backend
-- **Python** - Primary backend language
+- **Python 3.11+** - Primary backend language
 - **FastAPI** - Modern, fast web framework
-- **SQLAlchemy** - ORM for database operations
-- **Pydantic** - Data validation and settings
-- **PostgreSQL** - Primary database
-- **pgvector** - Vector similarity search
+- **SQLAlchemy 2.0** - ORM with async support
+- **Pydantic V2** - Data validation and settings
+- **PostgreSQL 15+** - Primary database with pgvector
+- **Alembic** - Database migration management
+- **python-jose** - JWT token management
+- **passlib[bcrypt]** - Password hashing
+- **pytest** - Testing framework
 
 ### AI & Analytics
 - **Python** - AI/ML implementation

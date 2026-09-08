@@ -82,11 +82,15 @@ async def health_check():
     }
 
 
-# TODO: Include routers
-# from app.routers import auth, users, challenges, universities, projects, industry, analytics, notifications
-# app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+# Include routers
+from app.routers import auth, challenges
+
+app.include_router(auth.router)
+app.include_router(challenges.router)
+
+# TODO: Include additional routers as they are implemented
+# from app.routers import users, universities, projects, industry, analytics, notifications
 # app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
-# app.include_router(challenges.router, prefix="/api/v1/challenges", tags=["Challenges"])
 # app.include_router(universities.router, prefix="/api/v1/universities", tags=["Universities"])
 # app.include_router(projects.router, prefix="/api/v1/projects", tags=["Projects"])
 # app.include_router(industry.router, prefix="/api/v1/industry", tags=["Industry"])

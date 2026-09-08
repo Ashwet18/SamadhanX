@@ -5,7 +5,10 @@ Pytest configuration and fixtures for database tests.
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.db.database import Base
+from fastapi.testclient import TestClient
+
+from app.db.database import Base, get_db
+from app.main import app
 from app.models import *
 
 # Use an in-memory SQLite database for testing
@@ -29,7 +32,24 @@ def db_session(engine):
     """Create a test database session."""
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = TestingSessionLocal()
+    
+    # Override get_db dependency to use test session
+    def override_get_db():
+        try:
+            yield session
+        finally:
+            pass  # Don't close session here
+    
+    app.dependency_overrides[get_db] = override_get_db
+    
     try:
         yield session
     finally:
         session.close()
+        app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def client(db_session):
+    """Create a test client."""
+    return TestClient(app)
