@@ -54,13 +54,31 @@ app.add_middleware(
 
 # Health check endpoint
 @app.get("/")
-async def root():
-    """Root endpoint for health checks."""
+@app.get("/health")
+async def health_check():
+    """Health check endpoint that tests database connectivity."""
+    from app.db.database import SessionLocal
+    from sqlalchemy import text
+    
+    db_status = "disconnected"
+    db_error = None
+    
+    try:
+        db = SessionLocal()
+        # Test database connection
+        db.execute(text("SELECT 1"))
+        db.close()
+        db_status = "connected"
+    except Exception as e:
+        db_error = str(e)
+    
     return {
+        "status": "ok" if db_status == "connected" else "degraded",
         "message": "SamadhanX API is running",
         "version": "1.0.0",
         "environment": settings.ENVIRONMENT,
-        "status": "healthy"
+        "database": db_status,
+        "database_error": db_error
     }
 
 
