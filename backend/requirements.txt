@@ -1,0 +1,80 @@
+# FastAPI and web framework dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Database dependencies
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.13.0
+
+# Authentication and security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Configuration and environment
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# HTTP client for external API calls
+httpx==0.25.2
+aiofiles==23.2.1
+
+# Data validation and serialization
+email-validator==2.1.0
+phonenumbers==8.13.26
+
+# Development and testing dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+black==23.12.0
+isort==5.13.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Documentation
+mkdocs==1.5.3
+mkdocs-material==9.4.8
+
+# Logging and monitoring
+structlog==23.2.0
+sentry-sdk[fastapi]==1.38.0
+
+# Task queue (for future AI processing)
+celery==5.3.4
+redis==5.0.1
+
+# AI/ML dependencies (for future implementation)
+openai==1.3.7
+tiktoken==0.5.2
+numpy==1.25.2
+scikit-learn==1.3.2
+
+# Vector database (for future semantic search)
+pgvector==0.2.4
+
+# Object storage and file handling
+boto3==1.34.0  # For AWS S3
+google-cloud-storage==2.10.0  # For Google Cloud Storage
+Pillow==10.1.0  # Image processing
+
+# Geographic data handling
+geopy==2.4.1
+shapely==2.0.2
+
+# Email handling
+emails==0.6.0
+jinja2==3.1.2
+
+# Rate limiting
+slowapi==0.1.9
+
+# CORS and middleware
+starlette==0.27.0
+
+# Utilities
+python-slugify==8.0.1
+pytz==2023.3
