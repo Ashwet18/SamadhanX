@@ -83,10 +83,13 @@ async def health_check():
 
 
 # Include routers
-from app.routers import auth, challenges
+from app.routers import auth, challenges, matching, projects, industry
 
 app.include_router(auth.router)
 app.include_router(challenges.router)
+app.include_router(matching.router)
+app.include_router(projects.router)
+app.include_router(industry.router)
 
 # TODO: Include additional routers as they are implemented
 # from app.routers import users, universities, projects, industry, analytics, notifications

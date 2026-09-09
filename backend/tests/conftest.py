@@ -3,6 +3,7 @@ Pytest configuration and fixtures for database tests.
 """
 
 import pytest
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
@@ -10,18 +11,18 @@ from fastapi.testclient import TestClient
 from app.db.database import Base, get_db
 from app.main import app
 from app.models import *
+from app.core.config import settings
 
-# Use an in-memory SQLite database for testing
-TEST_DATABASE_URL = "sqlite:///:memory:"
+# Use PostgreSQL for testing (supports UUID and Vector types)
+# Falls back to settings.DATABASE_URL if TEST_DATABASE_URL not set
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", settings.DATABASE_URL)
 
 
 @pytest.fixture(scope="function")
 def engine():
     """Create a test database engine."""
-    engine = create_engine(
-        TEST_DATABASE_URL,
-        connect_args={"check_same_thread": False}
-    )
+    # PostgreSQL doesn't need connect_args (check_same_thread is SQLite-specific)
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
