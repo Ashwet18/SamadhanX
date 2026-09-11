@@ -67,34 +67,46 @@ export enum Priority {
   CRITICAL = 'CRITICAL'
 }
 
-// User related types
-export interface User {
-  id: UUID
-  email: Email
-  first_name: string
-  last_name: string
-  phone?: PhoneNumber
-  avatar_url?: URL
-  is_active: boolean
-  is_verified: boolean
-  roles: UserRole[]
-  created_at: ISODateTime
-  updated_at: ISODateTime
+// Account status enum (matches backend)
+export enum AccountStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SUSPENDED = 'SUSPENDED',
+  PENDING = 'PENDING'
 }
 
-export interface UserProfile extends User {
-  bio?: string
-  location?: string
-  organization?: string
-  expertise_areas?: string[]
-  social_links?: Record<string, URL>
+// Media type enum (matches backend)
+export enum MediaType {
+  IMAGE = 'IMAGE',
+  VIDEO = 'VIDEO',
+  AUDIO = 'AUDIO',
+  DOCUMENT = 'DOCUMENT'
+}
+
+// User related types (matches backend auth schemas)
+export interface User {
+  id: UUID
+  name: string  // Backend uses single 'name' field, not first_name/last_name
+  email: Email
+  phone?: PhoneNumber
+  account_status: AccountStatus
+  roles: string[]  // Array of role names
+  created_at: ISODateTime
+  updated_at: ISODateTime
+  // Profile indicators
+  is_citizen: boolean
+  is_government_officer: boolean
+  is_faculty: boolean
+  is_student: boolean
+  // Government officer details (if applicable)
+  government_employee_id?: string
+  government_department?: string
+  government_designation?: string
 }
 
 export interface AuthTokens {
   access_token: string
-  refresh_token: string
   token_type: string
-  expires_in: number
 }
 
 export interface LoginCredentials {
@@ -103,42 +115,53 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
+  name: string  // Backend requires single 'name' field
   email: Email
-  password: string
-  first_name: string
-  last_name: string
   phone?: PhoneNumber
+  password: string
   role: UserRole
-  organization?: string
 }
 
-// Challenge related types
+export interface LoginResponse {
+  access_token: string
+  token_type: string
+  user: User
+}
+
+// Challenge related types (matches backend schemas)
 export interface Challenge {
   id: UUID
+  challenge_code: string  // Format: CH-JH-YYYY-XXXXX
   title: string
   description: string
   status: ChallengeStatus
-  priority: Priority
-  location: string
+  priority_score?: number
+  priority_level?: Priority
+  // Location fields (Jharkhand-specific)
+  district: string
+  block?: string
+  village?: string
   latitude?: number
   longitude?: number
-  category_ids: UUID[]
-  media_urls: URL[]
-  submitted_by: UUID
-  assigned_to?: UUID
-  ai_analysis?: ChallengeAIAnalysis
+  affected_population?: number
+  categories: Category[]
+  media: MediaFile[]
+  submitted_by?: UUID
+  submitter_name?: string
   created_at: ISODateTime
   updated_at: ISODateTime
 }
 
 export interface ChallengeCreate {
-  title: string
-  description: string
-  location: string
-  latitude?: number
-  longitude?: number
-  category_ids: UUID[]
-  media_files?: File[]
+  title: string  // Min 10, max 500 chars
+  description: string  // Min 30, max 5000 chars
+  district: string  // Min 2, max 100 chars
+  block?: string  // Max 100 chars
+  village?: string  // Max 100 chars
+  latitude?: number  // -90 to 90
+  longitude?: number  // -180 to 180
+  affected_population?: number  // 0 to 10,000,000
+  category_ids: UUID[]  // At least 1 required
 }
 
 export interface ChallengeUpdate {
