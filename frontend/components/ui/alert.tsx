@@ -11,6 +11,7 @@ const alertVariants = cva(
         default: "bg-background text-foreground",
         success: "border-green-500/50 text-green-900 dark:text-green-100 bg-green-50 dark:bg-green-950 [&>svg]:text-green-600",
         error: "border-red-500/50 text-red-900 dark:text-red-100 bg-red-50 dark:bg-red-950 [&>svg]:text-red-600",
+        destructive: "border-red-500/50 text-red-900 dark:text-red-100 bg-red-50 dark:bg-red-950 [&>svg]:text-red-600",
         warning: "border-yellow-500/50 text-yellow-900 dark:text-yellow-100 bg-yellow-50 dark:bg-yellow-950 [&>svg]:text-yellow-600",
         info: "border-blue-500/50 text-blue-900 dark:text-blue-100 bg-blue-50 dark:bg-blue-950 [&>svg]:text-blue-600",
       },
@@ -25,6 +26,7 @@ const iconMap = {
   default: Info,
   success: CheckCircle,
   error: AlertCircle,
+  destructive: AlertCircle,
   warning: AlertTriangle,
   info: Info,
 }
