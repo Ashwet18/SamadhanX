@@ -1,4 +1,4 @@
-# SamadhanX — Jharkhand Societal Innovation Exchange
+# SamadhanX —  Societal Innovation Exchange
 
 **Converting real societal problems into university-led innovation projects supported by industry and monitored by government.**
 
